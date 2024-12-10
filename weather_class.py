@@ -3,7 +3,8 @@ import requests
 class Weather:
 
     api_url_city = 'http://dataservice.accuweather.com/locations/v1/cities/search' #ссылка на api для определения места
-    api_url_weather = 'http://dataservice.accuweather.com/forecasts/v1/hourly/1hour/' #для определения погоды
+    api_url_weather_1day = 'http://dataservice.accuweather.com/forecasts/v1/daily/1day/' #для определения погоды
+    api_url_weather_5day = 'http://dataservice.accuweather.com/forecasts/v1/daily/5day/'
     def __init__(self, api_key):
         self.api_key = api_key
 
@@ -25,25 +26,54 @@ class Weather:
                 raise PermissionError('Доступ запрещен')
         except Exception as error:
             raise Exception(f'Ошибка: {error}')
-    def get_weather(self, code):
+    def get_weather(self, code, day):
         try:
-            params_weather = {'apikey': self.api_key,
-                                  'details': 'true',
-                                  'metric': 'true'}
-            r_weather = requests.get(self.api_url_weather + code, params=params_weather) # на определения погоды
-            r_weather.raise_for_status()
-            weather_json = r_weather.json()
-            temp = weather_json[0]['Temperature']['Value']
-            humidity = weather_json[0]['RelativeHumidity']
-            speed_wind = weather_json[0]['Wind']['Speed']['Value']
-            probability = weather_json[0]['PrecipitationProbability']
-            return {'temp': temp,
-                        'humidity': humidity,
-                        'speed_wind': speed_wind,
-                        'probability': probability}
+            if day == '1day':
+                params_weather = {'apikey': self.api_key,
+                                      'details': 'true',
+                                      'metric': 'true'}
+                r_weather = requests.get(self.api_url_weather_1day + code, params=params_weather) # на определения погоды
+                if not(r_weather.status_code == 401 or r_weather.status_code == 200):
+                    r_weather.raise_for_status()
+                weather_json = r_weather.json()
+                #print(weather_json)
+                date = weather_json['DailyForecasts'][0]['Date'][:10]
+                temp = weather_json['DailyForecasts'][0]['RealFeelTemperatureShade']['Minimum']['Value']
+                humidity = weather_json['DailyForecasts'][0]['Day']['RelativeHumidity']['Average']
+                speed_wind = weather_json['DailyForecasts'][0]['Day']['Wind']['Speed']['Value']
+                probability = weather_json['DailyForecasts'][0]['Day']['PrecipitationProbability']
+                return {'date': date,
+                            'temp': temp,
+                            'humidity': humidity,
+                            'speed_wind': speed_wind,
+                            'probability': probability}
+            elif day == '5day':
+                params_weather = {'apikey': self.api_key,
+                                      'details': 'true',
+                                      'metric': 'true'}
+                r_weather = requests.get(self.api_url_weather_5day + code, params=params_weather) # на определения погоды
+                if not(r_weather.status_code == 401 or r_weather.status_code == 200):
+                    r_weather.raise_for_status()
+                weather_json = r_weather.json()
+                #print(weather_json)
+                list_days = []
+                for dates in range(5):
+                    date = weather_json['DailyForecasts'][dates]['Date'][:10]
+                    temp = weather_json['DailyForecasts'][dates]['RealFeelTemperatureShade']['Minimum']['Value']
+                    humidity = weather_json['DailyForecasts'][dates]['Day']['RelativeHumidity']['Average']
+                    speed_wind = weather_json['DailyForecasts'][dates]['Day']['Wind']['Speed']['Value']
+                    probability = weather_json['DailyForecasts'][dates]['Day']['PrecipitationProbability']
+                    list_days.append({'date': date,
+                            'temp': temp,
+                            'humidity': humidity,
+                            'speed_wind': speed_wind,
+                            'probability': probability})
+                return list_days
+
         except requests.exceptions.ConnectionError:
             raise ConnectionError("Не удалось подключиться к серверу")
         except requests.exceptions.HTTPError:
+            print(r_weather.status_code)
             if r_weather.status_code == 404:
                 raise ValueError('Неправильные данные')
             elif r_weather.status_code == 503:
@@ -109,11 +139,11 @@ class Weather:
             weather_level = max(weather_level, 1)
 
         if weather_level == 3:
-            analysis_weather.append('Уровень погоды: плохая')
+            analysis_weather.append('плохая')
         elif weather_level == 2:
-            analysis_weather.append('Уровень погоды: умеренная')
+            analysis_weather.append('умеренная')
         else:
-            analysis_weather.append('Уровень погоды: нормальная')
+            analysis_weather.append('нормальная')
 
         return analysis_weather
 

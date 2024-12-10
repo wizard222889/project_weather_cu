@@ -1,20 +1,79 @@
 <!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial;
+            background-color: #f0f8ff;
+            color: #333;
+        }
+
+        h1 {
+            color: black;
+            padding: 10px;
+            margin: 0;
+        }
+
+        a {
+            display: inline-block;
+            margin-top: 20px;
+            text-align: center;
+            padding: 12px 25px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        table {
+            width: 80%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
 <body>
-<meta charset="utf-8">
-    <h1>Погода в первой точке</h1>
-    <p>Температура: {{ temp1 }}°C</p>
-    <p>Влажность: {{ hum1 }}%</p>
-    <p>Скорость ветра: {{ speed1 }} км/ч</p>
-    <p>Вероятность дождя: {{ pr1 }}%</p>
-    <p>Анализ погоды: {{ weather1 }}</p>
-    <p>Уровень погоды: {{ level1 }}</p>
-    <h1>Погода во второй точке</h1>
-    <p>Температура: {{ temp2 }}°C</p>
-    <p>Влажность: {{ hum2 }}%</p>
-    <p>Скорость ветра: {{ speed2 }} км/ч</p>
-    <p>Вероятность дождя: {{ pr2 }}%</p>
-    <p>Анализ погоды: {{ weather2 }}</p>
-    <p>Уровень погоды: {{ level2 }}</p>
+
+    {% for city, weath in city_weather.items() %}
+    <h1>Погода для города {{ city }}</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Дата</th>
+                <th>Температура (°C)</th>
+                <th>Влажность (%)</th>
+                <th>Скорость ветра (км/ч)</th>
+                <th>Вероятность дождя (%)</th>
+                <th>Анализ погоды</th>
+                <th>Уровень погоды</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for day in weath %}
+            <tr>
+                <td>{{ day.date }}</td>
+                <td>{{ day.temp }}</td>
+                <td>{{ day.humidity }}</td>
+                <td>{{ day.speed_wind }}</td>
+                <td>{{ day.probability }}</td>
+                <td>{{ day.weather }}</td>
+                <td>{{ day.level }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+    <a href="/plot">Отображение на графиках</a>
+    <a href="/map">Отображение на карте</a>
     <a href="/">Вернуться к выбору маршрута</a>
+
 </body>
 </html>

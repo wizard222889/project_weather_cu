@@ -11,35 +11,38 @@ def city_weather():
     else:
         first_point = request.form['first']
         second_point = request.form['second']
+        dop_point = request.form
+        day = request.form['day']
+        dict_city = dict()
+        dict_city[first_point] = []
+        dict_city[second_point] = []
+        for city in dop_point:
+            if city[:4] == 'city':
+                dict_city[dop_point[city]] = []
+
         try:
-            api_key = 'xhiaDpnTAldqTWG0AQI3byApBw1GGYM0'
+            api_key = 'lEuBYWRiUMyUNqDje0pym3UcVNWAXnBq'
             weather = Weather(api_key=api_key)
-            code_first_point = weather.get_city_code(first_point)
-            weather_first_point = weather.get_weather(code_first_point)
-            temp1 = weather_first_point['temp']
-            hum1 = weather_first_point['humidity']
-            speed_wind1 = weather_first_point['speed_wind']
-            probability1 = weather_first_point['probability']
-            analysis1 = weather.weather_detection(temp1, hum1, speed_wind1, probability1)
-            anaysis_weather1 = '. '.join(analysis1[:-1])
-            level_weather1 = analysis1[-1]
+            for city in dict_city:
+                if day == '1day':
+                    code_point = weather.get_city_code(city)
+                    weather_point = weather.get_weather(code_point, day=day)
+                    analysis = weather.weather_detection(weather_point['temp'], weather_point['humidity'],
+                                                                         weather_point['speed_wind'], weather_point['probability'])
+                    weather_point['weather'] = '. '.join(analysis[:-1])
+                    weather_point['level'] = analysis[-1]
+                    dict_city[city].append(weather_point)
+                elif day == '5day':
+                    code_point = weather.get_city_code(city)
+                    weather_point = weather.get_weather(code_point, day=day)
+                    for dates in weather_point:
+                        analysis = weather.weather_detection(dates['temp'], dates['humidity'],
+                                                             dates['speed_wind'], dates['probability'])
+                        dates['weather'] = '. '.join(analysis[:-1])
+                        dates['level'] = analysis[-1]
+                        dict_city[city].append(dates)
 
-            code_second_point = weather.get_city_code(second_point)
-            weather_second_point = weather.get_weather(code_second_point)
-            temp2 = weather_second_point['temp']
-            hum2 = weather_second_point['humidity']
-            speed_wind2 = weather_second_point['speed_wind']
-            probability2 = weather_second_point['probability']
-            analysis2 = weather.weather_detection(temp2, hum2, speed_wind2, probability2)
-            anaysis_weather2 = '. '.join(analysis2[:-1])
-            level_weather2 = analysis2[-1]
-
-            return render_template('weather_post_html.html', temp1=temp1,
-                                   hum1=hum1, speed1=speed_wind1, pr1=probability1, weather1=anaysis_weather1,
-                                   level1=level_weather1, hum2=hum2, temp2=temp2, speed2=speed_wind2, pr2=probability2,
-                                   weather2=anaysis_weather2,
-                                   level2=level_weather2)
-
+            return render_template('weather_post_html.html', city_weather=dict_city)
         except (ConnectionError, ValueError, PermissionError, Exception) as error:
             return render_template('error.html', error=str(error))
 
