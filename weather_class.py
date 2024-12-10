@@ -109,11 +109,11 @@ class Weather:
             weather_level = max(weather_level, 1)
 
         if weather_level == 3:
-            analysis_weather.append('Уровень погоды: плохая')
+            analysis_weather.append('плохая')
         elif weather_level == 2:
-            analysis_weather.append('Уровень погоды: умеренная')
+            analysis_weather.append('умеренная')
         else:
-            analysis_weather.append('Уровень погоды: нормальная')
+            analysis_weather.append('нормальная')
 
         return analysis_weather
 
