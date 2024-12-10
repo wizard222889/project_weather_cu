@@ -36,7 +36,55 @@ class Weather:
         except Exception as error:
             print(f'Произошла неизвестная ошибка: {error}')
 
+    def weather_detection(self, temp, humidity, speed_wind, probability): #ключевые параметры
+        analysis_weather = []
+        if temp > 30:
+            analysis_weather.append('На улице очень жарко! Риск перегреться')
+        elif 15 <= temp <= 30:
+            analysis_weather.append('На улице оптимальная температура')
+        elif 0 <= temp < 15:
+            analysis_weather.append('На улице прохладно')
+        elif -10 <= temp < 0:
+            analysis_weather.append('На улице холодно, будь осторожен!')
+        else:
+            analysis_weather.append('На улице очень холодно! Риск замерзнуть')
+
+        if humidity > 85:
+            if temp > 30:
+                analysis_weather.append('При такой влажности и температуры есть риск теплового удара')
+            elif temp < 0:
+                analysis_weather.append('Риск гололеда, будь осторожен')
+        elif humidity < 30:
+            analysis_weather.append('Низкая влажность. Будь осторожен: есть риск сухости в горле, глазах, носу')
+
+        if speed_wind > 40:
+            if probability > 80:
+                analysis_weather.append('Сильный ветер и осадки. Возможен ураган')
+            else:
+                analysis_weather.append('Сильный ветер')
+
+        if probability > 80:
+            if temp > 25:
+                analysis_weather.append('На улице жарко и высокая вероятность осадков. Будь осторожен, возможен ураган')
+            elif temp < 0:
+                analysis_weather.append('На улице холодно и высокая вероятность осадков. Возможен гололед и град')
+        elif probability > 50:
+            analysis_weather.append('Вероятность дождя большая')
+        elif probability > 20:
+            analysis_weather.append('Возможен дождь')
+
+        for idx, weather_pr in enumerate(analysis_weather):
+            print(f'{idx + 1}. {weather_pr}')
+
+
+
 
 api_key = 'Vuea1Za3LttfbsKANvpxf2Nm1yIAoorY'
 weather = Weather(api_key)
-weather.get_weather(55.7558, 37.6173) #тестовый запуск на проверку
+#weather.get_weather(55.7558, 37.6173) #тестовый запуск на проверку
+
+
+#тестовые запуски
+weather.weather_detection(20, 80, 20, 50)
+weather.weather_detection(31, 80, 20, 50)
+weather.weather_detection(10, 20, 60, 80)
