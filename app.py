@@ -12,7 +12,7 @@ def city_weather():
         first_point = request.form['first']
         second_point = request.form['second']
         try:
-            api_key = 'Vuea1Za3LttfbsKANvpxf2Nm1yIAoorY'
+            api_key = 'xhiaDpnTAldqTWG0AQI3byApBw1GGYM0'
             weather = Weather(api_key=api_key)
             code_first_point = weather.get_city_code(first_point)
             weather_first_point = weather.get_weather(code_first_point)
@@ -36,7 +36,7 @@ def city_weather():
 
             return render_template('weather_post_html.html', temp1=temp1,
                                    hum1=hum1, speed1=speed_wind1, pr1=probability1, weather1=anaysis_weather1,
-                                   level1=level_weather1, hum2=hum2, speed2=speed_wind2, pr2=probability2,
+                                   level1=level_weather1, hum2=hum2, temp2=temp2, speed2=speed_wind2, pr2=probability2,
                                    weather2=anaysis_weather2,
                                    level2=level_weather2)
 
