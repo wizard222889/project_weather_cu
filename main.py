@@ -38,43 +38,68 @@ class Weather:
 
     def weather_detection(self, temp, humidity, speed_wind, probability): #ключевые параметры
         analysis_weather = []
+        weather_level = 1
         if temp > 30:
             analysis_weather.append('На улице очень жарко! Риск перегреться')
+            weather_level = 3
         elif 15 <= temp <= 30:
             analysis_weather.append('На улице оптимальная температура')
+            weather_level = 1
         elif 0 <= temp < 15:
             analysis_weather.append('На улице прохладно')
+            weather_level = 2
         elif -10 <= temp < 0:
             analysis_weather.append('На улице холодно, будь осторожен!')
+            weather_level = 2
         else:
             analysis_weather.append('На улице очень холодно! Риск замерзнуть')
+            weather_level = 3
 
         if humidity > 85:
             if temp > 30:
                 analysis_weather.append('При такой влажности и температуры есть риск теплового удара')
+                weather_level = 3
             elif temp < 0:
                 analysis_weather.append('Риск гололеда, будь осторожен')
+                weather_level = max(weather_level, 2)
         elif humidity < 30:
             analysis_weather.append('Низкая влажность. Будь осторожен: есть риск сухости в горле, глазах, носу')
+            weather_level = max(weather_level, 2)
 
         if speed_wind > 40:
             if probability > 80:
                 analysis_weather.append('Сильный ветер и осадки. Возможен ураган')
+                weather_level = 3
             else:
                 analysis_weather.append('Сильный ветер')
+                weather_level = max(weather_level, 2)
+        elif 20 < speed_wind <= 40:
+            analysis_weather.append('На улице ветер')
+            weather_level = max(weather_level, 2)
 
         if probability > 80:
             if temp > 25:
                 analysis_weather.append('На улице жарко и высокая вероятность осадков. Будь осторожен, возможен ураган')
+                weather_level = 3
             elif temp < 0:
                 analysis_weather.append('На улице холодно и высокая вероятность осадков. Возможен гололед и град')
+                weather_level = 3
         elif probability > 50:
             analysis_weather.append('Вероятность дождя большая')
+            weather_level = max(weather_level, 2)
         elif probability > 20:
             analysis_weather.append('Возможен дождь')
+            weather_level = max(weather_level, 1)
 
         for idx, weather_pr in enumerate(analysis_weather):
             print(f'{idx + 1}. {weather_pr}')
+
+        if weather_level == 3:
+            print('Уровень погоды: плохая')
+        elif weather_level == 2:
+            print('Уровень погоды: умеренная')
+        else:
+            print('Уровень погоды: нормальная')
 
 
 
@@ -88,3 +113,5 @@ weather = Weather(api_key)
 weather.weather_detection(20, 80, 20, 50)
 weather.weather_detection(31, 80, 20, 50)
 weather.weather_detection(10, 20, 60, 80)
+weather.weather_detection(10, 20, 30, 10)
+weather.weather_detection(-17, 20, 60, 80)
