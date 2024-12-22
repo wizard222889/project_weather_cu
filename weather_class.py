@@ -8,6 +8,25 @@ class Weather:
     def __init__(self, api_key):
         self.api_key = api_key
 
+    def get_coord(self, city):
+        try:
+            params = {'apikey': self.api_key,
+                      'q': city}
+            r = requests.get(self.api_url_city, params=params)
+            r.raise_for_status()
+            return (r.json()[0]['GeoPosition']['Latitude'], r.json()[0]['GeoPosition']['Longitude'])
+        except requests.exceptions.ConnectionError:
+            raise ConnectionError("Не удалось подключиться к серверу")
+        except requests.exceptions.HTTPError:
+            if r.status_code == 404:
+                raise ValueError('Неправильные данные')
+            elif r.status_code == 503:
+                raise PermissionError('API не работают')
+            else:
+                raise PermissionError('Доступ запрещен')
+        except Exception as error:
+            raise Exception(f'Ошибка: {error}')
+
     def get_city_code(self, city):
         try:
             params = {'apikey': self.api_key,

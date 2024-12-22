@@ -2,11 +2,17 @@ from weather_class import Weather
 from flask import Flask, request, render_template
 import plotly.graph_objs as go
 from dash import Dash, dcc, html, Input, Output
+import pandas as pd
 
 app = Flask(__name__)
 dict_city = dict()
 day = ''
 dash_app = Dash(__name__, server=app, url_base_pathname='/plot/')
+dash_app_map = Dash(__name__, server=app, url_base_pathname='/map/')
+
+api_key = 'iMFsn9peKBjtp6vnkuHHGNh05n6dP9lZ'
+weather = Weather(api_key=api_key)
+
 dash_app.layout = html.Div([
     dcc.Dropdown(id='drop',
                  options=[{'label': 'Температура', 'value': 'temp'},
@@ -16,6 +22,11 @@ dash_app.layout = html.Div([
                  value='temp'),
     dcc.Graph(id='graph_weat')
 ])
+
+dash_app_map.layout = html.Div([
+    dcc.Graph(id='temp_map')
+])
+
 @dash_app.callback(Output('graph_weat', 'figure'),
     Input('drop', 'value'))
 def graph(param):
@@ -54,16 +65,53 @@ def graph(param):
 
 
     return fig
+@dash_app_map.callback(Output('temp_map', 'figure'),
+                       Input('temp_map', 'id'))
+def create_map(pas):
+    global dict_city, weather
+    lat = []
+    lon = []
+    cities = []
+    temp = []
+    for city, weat in dict_city.items():
+        cities.append(city)
+        temp.append(f'Температура в {city} {weat[0]["temp"]}')
+        coord = weather.get_coord(city)
+        lat.append(coord[0])
+        lon.append(coord[1])
+
+    df = pd.DataFrame({'Город': cities, 'lat': lat, 'lon': lon, 'Температура': temp})
+
+    fig = go.Figure()
+    fig.add_trace(go.Scattermapbox(
+        lat=df['lat'],
+        lon=df['lon'],
+        hovertext=df['Температура'],
+        marker = go.scattermapbox.Marker(size=10, color='red'),
+        mode = 'lines+markers'
+    ))
+    fig.update_layout(
+        mapbox=dict(
+            style='open-street-map',
+            zoom=3,
+            center={'lat': 55.752, 'lon': 37.619}
+        ),
+        height=500,
+    )
+    return fig
+
+
 @app.route('/', methods=['GET', 'POST'])
 def city_weather():
-    global dict_city
+    global dict_city, day
+    dict_city = {}
+    day = ''
     if request.method == 'GET':
         return render_template('weather_html.html')
     else:
         first_point = request.form['first']
         second_point = request.form['second']
         dop_point = request.form
-        global day
         day = request.form['day']
         dict_city[first_point] = []
         dict_city[second_point] = []
@@ -72,8 +120,7 @@ def city_weather():
                 dict_city[dop_point[city]] = []
 
         try:
-            api_key = 'HcL7JxdZfOgwGa0eVcJHo0omJ6S8P1gU'
-            weather = Weather(api_key=api_key)
+            global weather
             for city in dict_city:
                 if day == '1day':
                     code_point = weather.get_city_code(city)
@@ -92,7 +139,6 @@ def city_weather():
                         dates['weather'] = '. '.join(analysis[:-1])
                         dates['level'] = analysis[-1]
                         dict_city[city].append(dates)
-
             return render_template('weather_post_html.html', city_weather=dict_city)
         except (ConnectionError, ValueError, PermissionError, Exception) as error:
             return render_template('error.html', error=str(error))
